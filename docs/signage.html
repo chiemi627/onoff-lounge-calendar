@@ -8,49 +8,43 @@
 <link rel="stylesheet" href="signage.css">
 </head>
 <body>
-<div class="sign" id="sign">
+<div class="sign">
 
   <header class="head">
-    <div class="brand">
-      <h1>OnOff<span>ラウンジ</span></h1>
-      <p>今週・来週の予定</p>
-    </div>
-
-    <div class="status" id="status">
-      <div class="status-label" id="status-label">読み込み中</div>
-      <div class="status-detail" id="status-detail">&nbsp;</div>
-    </div>
-
+    <h1 class="brand">OnOff<span>ラウンジ</span></h1>
     <div class="clock">
-      <div class="clock-time" id="clock-time">--:--</div>
-      <div class="clock-date" id="clock-date">&nbsp;</div>
+      <span class="clock-time" id="clock-time">--:--</span>
+      <span class="clock-date" id="clock-date">&nbsp;</span>
     </div>
   </header>
 
-  <main class="weeks">
-    <section class="week">
-      <h2>今週</h2>
-      <div class="days" id="week0"></div>
-    </section>
-    <section class="week">
-      <h2>来週</h2>
-      <div class="days" id="week1"></div>
-    </section>
+  <section class="status" id="status">
+    <p class="status-label" id="status-label">読み込み中</p>
+    <p class="status-detail" id="status-detail">&nbsp;</p>
+  </section>
+
+  <main class="main">
+    <h2 class="sec-title">今週の予定</h2>
+    <div class="days" id="week0"></div>
   </main>
+
+  <section class="next">
+    <h2 class="sec-title sub">来週</h2>
+    <div class="mini" id="week1"></div>
+  </section>
 
   <aside class="rail">
     <div class="qr">
       <img src="qr-form.svg" alt="予約フォームのQRコード">
       <p class="qr-title">ラウンジを予約する</p>
-      <p class="qr-sub">予約フォーム</p>
     </div>
     <div class="qr">
       <img src="qr-mobile.svg" alt="スマホ用予定ページのQRコード">
       <p class="qr-title">スマホで予定を見る</p>
-      <p class="qr-sub">先の予定も確認できます</p>
     </div>
-    <p class="rail-foot" id="rail-foot">&nbsp;</p>
   </aside>
+
+  <p class="foot" id="foot">&nbsp;</p>
 
 </div>
 <script src="signage.js"></script>

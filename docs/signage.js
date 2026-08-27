@@ -92,52 +92,85 @@ function eventsOn(dayMin) {
 }
 
 // ---------- 描画 ----------
-function renderWeeks() {
+
+/** 予定チップのHTML */
+function evHtml(ev) {
+  let t;
+  if (ev.s < 0) t = '終日';
+  else if (ev.span === 1) t = `${hhmm(ev.s)} →`;
+  else if (ev.span === 2) t = '終日 →';
+  else if (ev.span === 3) t = `→ ${hhmm(ev.e)}`;
+  else t = `${hhmm(ev.s)}–${hhmm(ev.e)}`;
+  return `<div class="ev${ev.kind ? ' open' : ''}">
+      <span class="ev-time">${t}</span>
+      <span class="ev-name">${esc(ev.title)}</span>
+    </div>`;
+}
+
+/** 今週：主役。1日1枚のカードで大きく出す */
+function renderThisWeek() {
   const today = dayStart(nowJstMin());
-  for (let w = 0; w < 2; w++) {
-    const box = el(`week${w}`);
-    const frag = document.createDocumentFragment();
-    for (let i = 0; i < 7; i++) {
-      const dayMin = state.weekStart + (w * 7 + i) * 1440;
-      const p = partsOf(dayMin);
-      const evs = eventsOn(dayMin);
+  const frag = document.createDocumentFragment();
 
-      const card = document.createElement('div');
-      card.className = 'day' +
-        (dayMin === today ? ' today' : dayMin < today ? ' past' : '') +
-        (p.w === 0 ? ' sun' : p.w === 6 ? ' sat' : '');
+  for (let i = 0; i < 7; i++) {
+    const dayMin = state.weekStart + i * 1440;
+    const p = partsOf(dayMin);
+    const evs = eventsOn(dayMin);
 
-      const head = `<div class="day-head">
-          <span class="day-num">${p.m}/${p.d}</span>
-          <span class="day-wd">${WD[p.w]}</span>
-          ${dayMin === today ? '<span class="badge-today">今日</span>' : ''}
-        </div>`;
+    const card = document.createElement('div');
+    card.className = 'day' +
+      (dayMin === today ? ' today' : dayMin < today ? ' past' : '') +
+      (p.w === 0 ? ' sun' : p.w === 6 ? ' sat' : '');
 
-      let body;
-      if (!evs.length) {
-        body = '<div class="free-mark">空き</div>';
-      } else {
-        const shown = evs.slice(0, maxShown());
-        body = '<div class="evs">' + shown.map((ev) => {
-          let t;
-          if (ev.s < 0) t = '終日';
-          else if (ev.span === 1) t = `${hhmm(ev.s)} →`;
-          else if (ev.span === 2) t = '終日 →';
-          else if (ev.span === 3) t = `→ ${hhmm(ev.e)}`;
-          else t = `${hhmm(ev.s)}–${hhmm(ev.e)}`;
-          return `<div class="ev${ev.kind ? ' open' : ''}">
-              <div class="ev-time">${t}</div>
-              <div class="ev-name">${esc(ev.title)}</div>
-            </div>`;
-        }).join('') +
-        (evs.length > shown.length ? `<div class="ev-more">ほか${evs.length - shown.length}件</div>` : '') +
+    // 「今日」バッジも日付ブロックの中に入れて、予定チップの開始位置を揃える
+    const head = `<div class="day-head">
+        <span class="day-num">${p.m}/${p.d}</span>
+        <span class="day-wd">${WD[p.w]}</span>
+        ${dayMin === today ? '<span class="badge-today">今日</span>' : ''}
+      </div>`;
+
+    let body;
+    if (!evs.length) {
+      body = `<div class="free-mark">空き</div>`;
+    } else {
+      const shown = evs.slice(0, maxShown());
+      body = '<div class="evs">' + shown.map(evHtml).join('') +
+        (evs.length > shown.length ? `<span class="ev-more">ほか${evs.length - shown.length}件</span>` : '') +
         '</div>';
-      }
-      card.innerHTML = head + body;
-      frag.appendChild(card);
     }
-    box.replaceChildren(frag);
+    card.innerHTML = head + body;
+    frag.appendChild(card);
   }
+  el('week0').replaceChildren(frag);
+}
+
+/** 来週：おまけ。貸切か空きかだけ分かればよい */
+function renderNextWeek() {
+  const frag = document.createDocumentFragment();
+
+  for (let i = 0; i < 7; i++) {
+    const dayMin = state.weekStart + (7 + i) * 1440;
+    const p = partsOf(dayMin);
+    const evs = eventsOn(dayMin);
+    const busy = evs.some((ev) => ev.kind === 0);
+
+    const cell = document.createElement('div');
+    cell.className = 'mini-day' + (busy ? ' busy' : '') +
+      (p.w === 0 ? ' sun' : p.w === 6 ? ' sat' : '');
+    const state_ = evs.length
+      ? (busy ? state.labels[0] : state.labels[1]) + (evs.length > 1 ? ` ${evs.length}件` : '')
+      : '空き';
+    cell.innerHTML = `<span class="mini-date">${p.m}/${p.d}</span>` +
+      `<span class="mini-wd">${WD[p.w]}</span>` +
+      `<span class="mini-state">${esc(state_)}</span>`;
+    frag.appendChild(cell);
+  }
+  el('week1').replaceChildren(frag);
+}
+
+function renderWeeks() {
+  renderThisWeek();
+  renderNextWeek();
 }
 
 /** ヘッダの「ただいま」表示 */
@@ -176,11 +209,11 @@ function renderClock() {
 }
 
 function renderFoot() {
-  const foot = el('rail-foot');
+  const foot = el('foot');
   const stale = Date.now() - state.lastGood > 30 * 60 * 1000;
   const gen = state.index ? new Date(state.index.gen) : null;
   const t = gen ? gen.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-  foot.className = 'rail-foot' + (stale ? ' stale' : '');
+  foot.className = 'foot' + (stale ? ' stale' : '');
   foot.textContent = stale ? `更新できていません（最終 ${t}）` : `最終更新 ${t}`;
 }
 

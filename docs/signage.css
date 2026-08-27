@@ -1,14 +1,25 @@
 /* ============================================================
-   デジタルサイネージ用（無操作・常時表示）
-   横長(16:9)を基本に、縦置きディスプレイでも崩れないようにしている
+   デジタルサイネージ用（ライトモード・無操作・常時表示）
+   主役は「ただいまの状態」と「今週」。来週は下段におまけで置く。
    ============================================================ */
 :root{
-  --bg:#0d1512; --panel:#18221e; --panel-2:#1f2b26; --line:#2e3d37;
-  --fg:#f2f7f5; --muted:#93a8a0;
-  --busy:#ff6b4a; --busy-bg:#3d1d15;
-  --free:#3ddc97; --free-bg:#123328;
-  --open:#7fb3e8;
-  --accent:#4fd1ab;
+  --bg:#eceff0;
+  --card:#fff;
+  --card-sub:#f5f7f7;
+  --fg:#15201d;
+  --muted:#6d7f79;
+  --line:#dbe3e0;
+
+  --brand:#0e6b57;
+  --brand-fg:#fff;
+
+  --busy:#c0392b;
+  --busy-bg:#fdeceb;
+  --busy-line:#f0bab4;
+
+  --free:#0d7a51;
+  --free-bg:#e7f5ee;
+  --free-line:#a9dcc4;
 }
 *{box-sizing:border-box}
 html,body{margin:0; height:100%; overflow:hidden}
@@ -16,178 +27,176 @@ body{
   background:var(--bg); color:var(--fg);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
   font-feature-settings:"palt";
-  /* 焼き付き防止でごくわずかに位置をずらす（JSが --shift を動かす） */
+  /* 焼き付き防止にごくわずかに動かす（JSが --shift を更新） */
   transform:translate(var(--shift-x,0px),var(--shift-y,0px));
   transition:transform 4s linear;
 }
 
 .sign{
-  height:100vh; display:grid;
-  grid-template-columns:1fr clamp(190px,17vw,340px);
-  grid-template-rows:auto 1fr;
-  gap:1.1vmin; padding:1.4vmin;
+  height:100vh; display:grid; gap:1.2vmin; padding:1.2vmin;
+  grid-template-columns:1fr;
+  grid-template-rows:auto auto 1fr auto auto auto;
+  grid-template-areas:"head" "status" "main" "next" "rail" "foot";
 }
 
 /* ---------- ヘッダ ---------- */
 .head{
-  grid-column:1; grid-row:1;
-  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:2vmin;
-  background:var(--panel); border-radius:1.4vmin; padding:1.2vmin 2vmin;
+  grid-area:head;
+  display:flex; align-items:center; justify-content:space-between; gap:2vmin;
+  background:var(--brand); color:var(--brand-fg);
+  border-radius:1.4vmin; padding:1.4vmin 2.4vmin;
 }
-.brand h1{margin:0; font-size:3.1vmin; font-weight:800; letter-spacing:.02em; line-height:1.1}
-.brand h1 span{color:var(--accent)}
-.brand p{margin:.2vmin 0 0; font-size:1.5vmin; color:var(--muted)}
+.brand{margin:0; font-size:3.6vmin; font-weight:800; letter-spacing:.01em; line-height:1}
+.brand span{opacity:.75}
+.clock{display:flex; align-items:baseline; gap:1.6vmin}
+.clock-time{font-size:4.6vmin; font-weight:800; font-variant-numeric:tabular-nums; line-height:1}
+.clock-date{font-size:2vmin; opacity:.8}
 
+/* ---------- ただいまの状態（いちばん目立たせる） ---------- */
 .status{
-  justify-self:center; text-align:center;
-  padding:.9vmin 3vmin; border-radius:1.2vmin; min-width:38%;
-  background:var(--panel-2); border:.35vmin solid var(--line);
+  grid-area:status; text-align:center;
+  border-radius:1.4vmin; padding:2vmin 2vmin 2.2vmin;
+  background:var(--card); border:.4vmin solid var(--line);
 }
-.status.busy{background:var(--busy-bg); border-color:var(--busy)}
-.status.free{background:var(--free-bg); border-color:var(--free)}
-.status-label{font-size:3.4vmin; font-weight:800; line-height:1.15}
+.status.busy{background:var(--busy-bg); border-color:var(--busy-line)}
+.status.free{background:var(--free-bg); border-color:var(--free-line)}
+.status-label{margin:0; font-size:5.2vmin; font-weight:800; line-height:1.1; letter-spacing:.01em}
 .status.busy .status-label{color:var(--busy)}
 .status.free .status-label{color:var(--free)}
-.status-detail{font-size:1.75vmin; color:var(--muted); margin-top:.3vmin}
+.status-detail{margin:.8vmin 0 0; font-size:2.4vmin; color:var(--muted); line-height:1.35}
 
-.clock{text-align:right; line-height:1}
-.clock-time{font-size:5vmin; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.01em}
-.clock-date{font-size:1.7vmin; color:var(--muted); margin-top:.5vmin}
-
-/* ---------- 週 ---------- */
-.weeks{
-  grid-column:1; grid-row:2;
-  display:grid; grid-template-rows:1fr 1fr; gap:1.1vmin; min-height:0;
+/* ---------- 見出し ---------- */
+.sec-title{
+  margin:0 0 .8vmin .4vmin; font-size:2.3vmin; font-weight:800;
+  color:var(--muted); letter-spacing:.14em;
 }
-.week{display:grid; grid-template-columns:auto 1fr; gap:1vmin; min-height:0}
-.week h2{
-  margin:0; align-self:stretch;
-  writing-mode:vertical-rl; text-orientation:upright;
-  display:flex; align-items:center; justify-content:center;
-  background:var(--panel); border-radius:1.2vmin; padding:0 .4vmin;
-  font-size:2vmin; font-weight:800; letter-spacing:.35em; color:var(--muted);
-}
-.days{display:grid; grid-template-columns:repeat(7,1fr); gap:.8vmin; min-height:0}
+.sec-title.sub{font-size:1.9vmin; opacity:.85}
 
+/* ---------- 今週（主役） ---------- */
+.main{grid-area:main; display:flex; flex-direction:column; min-height:0}
+.days{
+  flex:1; display:grid; gap:.8vmin; min-height:0;
+  grid-template-columns:1fr; grid-template-rows:repeat(7,1fr);
+}
 .day{
-  background:var(--panel); border-radius:1.2vmin; padding:.9vmin;
-  display:flex; flex-direction:column; gap:.6vmin; min-height:0; overflow:hidden;
-  border:.3vmin solid transparent;
+  background:var(--card); border:1px solid var(--line); border-radius:1.2vmin;
+  display:flex; align-items:center; gap:2.4vmin;
+  padding:.8vmin 2vmin; min-height:0; overflow:hidden;
 }
-.day.past{opacity:.38}
-.day.today{border-color:var(--accent); background:var(--panel-2)}
-.day-head{display:flex; align-items:baseline; gap:.6vmin; flex:none; flex-wrap:wrap}
-.day-num{font-size:2.3vmin; font-weight:800; line-height:1}
-.day-wd{font-size:1.5vmin; color:var(--muted)}
-.day.sun .day-num,.day.sun .day-wd{color:#ff8f76}
-.day.sat .day-num,.day.sat .day-wd{color:#7fb3e8}
-.day.today .day-wd{color:var(--accent)}
+.day.past{background:var(--card-sub); color:var(--muted); border-style:dashed}
+.day.past .day-num{color:var(--muted)}
+.day.today{
+  border:.4vmin solid var(--brand);
+  box-shadow:0 .3vmin 1.4vmin rgba(14,107,87,.16);
+}
+
+.day-head{flex:none; width:23vmin; display:flex; align-items:baseline; gap:.8vmin}
+.day-num{font-size:3.4vmin; font-weight:800; line-height:1; font-variant-numeric:tabular-nums}
+.day-wd{font-size:2.2vmin; color:var(--muted)}
+.day.sun .day-num,.day.sun .day-wd{color:#c0392b}
+.day.sat .day-num,.day.sat .day-wd{color:#1f6bb0}
+.day.past.sun .day-num,.day.past.sat .day-num{opacity:.55}
 .badge-today{
-  margin-left:auto; font-size:1.15vmin; font-weight:800; padding:.2vmin .7vmin;
-  border-radius:999px; background:var(--accent); color:#0d1512;
-  white-space:nowrap; flex:none;
+  flex:none; margin-left:auto; font-size:1.8vmin; font-weight:800; padding:.35vmin 1.1vmin;
+  border-radius:999px; background:var(--brand); color:#fff; white-space:nowrap;
 }
 
-.evs{display:flex; flex-direction:column; gap:.5vmin; overflow:hidden; min-height:0}
+/* 予定チップ。折り返さず1行に詰め、時刻は必ず残して名前だけ省略する */
+.evs{
+  flex:1; display:flex; align-items:center; flex-wrap:nowrap;
+  gap:1vmin; min-width:0; overflow:hidden;
+}
 .ev{
-  background:var(--busy-bg); border-left:.45vmin solid var(--busy);
-  border-radius:.5vmin; padding:.5vmin .7vmin; min-height:0;
+  display:flex; align-items:baseline; gap:1.2vmin; min-width:17vmin;
+  background:var(--busy-bg); border:1px solid var(--busy-line);
+  border-left:.6vmin solid var(--busy);
+  border-radius:.7vmin; padding:.7vmin 1.4vmin;
 }
-.ev.open{background:#16283a; border-left-color:var(--open)}
+.ev.open{background:#e9f0fa; border-color:#b8cfea; border-left-color:#1f6bb0}
 .ev-time{
-  font-size:1.55vmin; font-weight:800; color:var(--busy);
-  font-variant-numeric:tabular-nums; line-height:1.2; white-space:nowrap;
+  flex:none; font-size:2.3vmin; font-weight:800; color:var(--busy);
+  font-variant-numeric:tabular-nums; white-space:nowrap; letter-spacing:-.01em;
 }
-.ev.open .ev-time{color:var(--open)}
+.ev.open .ev-time{color:#1f6bb0}
 .ev-name{
-  font-size:1.45vmin; line-height:1.3; margin-top:.15vmin; color:var(--fg);
-  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  min-width:0; font-size:2.3vmin; color:var(--fg);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.ev-more{font-size:1.3vmin; color:var(--muted); padding-left:.3vmin}
+.ev-more{flex:none; font-size:2vmin; color:var(--muted); white-space:nowrap}
+.free-mark{flex:1; font-size:2.5vmin; font-weight:800; color:var(--free); opacity:.8}
+.day.past .free-mark{color:var(--muted); opacity:.6}
 
-.free-mark{
-  flex:1; display:flex; align-items:center; justify-content:center;
-  color:var(--free); font-size:2.4vmin; font-weight:800; letter-spacing:.08em; opacity:.8;
+/* ---------- 来週（おまけ） ---------- */
+.next{grid-area:next}
+.mini{display:grid; grid-template-columns:repeat(7,1fr); gap:.7vmin}
+.mini-day{
+  background:var(--card); border:1px solid var(--line); border-radius:.9vmin;
+  padding:.9vmin .5vmin; text-align:center;
 }
+.mini-day.busy{background:var(--busy-bg); border-color:var(--busy-line)}
+.mini-date{font-size:2vmin; font-weight:800; font-variant-numeric:tabular-nums}
+.mini-wd{font-size:1.5vmin; color:var(--muted); margin-left:.4vmin}
+.mini-day.sun .mini-date{color:#c0392b}
+.mini-day.sat .mini-date{color:#1f6bb0}
+.mini-state{
+  display:block; margin-top:.5vmin; font-size:1.7vmin; font-weight:800;
+}
+.mini-day.busy .mini-state{color:var(--busy)}
+.mini-day:not(.busy) .mini-state{color:var(--free); opacity:.75}
 
-/* ---------- 右のQR列 ---------- */
+/* ---------- QR ---------- */
 .rail{
-  grid-column:2; grid-row:1 / span 2;
-  background:var(--panel); border-radius:1.4vmin; padding:1.6vmin 1.2vmin;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2vmin;
+  grid-area:rail; background:var(--card); border:1px solid var(--line);
+  border-radius:1.4vmin; padding:1.6vmin;
+  display:flex; align-items:center; justify-content:space-evenly; gap:3vmin;
 }
-.qr{text-align:center; width:100%}
-.qr img{
-  width:min(100%,22vmin); aspect-ratio:1; display:block; margin:0 auto;
-  background:#fff; border-radius:1vmin; padding:.6vmin;
-}
-.qr-title{margin:1vmin 0 0; font-size:1.75vmin; font-weight:800; line-height:1.25}
-.qr-sub{margin:.3vmin 0 0; font-size:1.35vmin; color:var(--muted)}
-.rail-foot{margin:0; font-size:1.2vmin; color:var(--muted); text-align:center; line-height:1.4}
-.rail-foot.stale{color:var(--busy)}
+.qr{text-align:center}
+.qr img{width:19vmin; aspect-ratio:1; display:block; margin:0 auto; background:#fff}
+.qr-title{margin:.9vmin 0 0; font-size:2.1vmin; font-weight:800}
 
-/* ---------- 縦置きディスプレイ（ワイドパネルを縦向きに設置） ----------
-   7列に割ると1日あたりが細くなりすぎるので、
-   「日付＋予定」を横長の行にして縦に14本並べる            */
-@media (max-aspect-ratio:1/1){
-  .sign{grid-template-columns:1fr; grid-template-rows:auto 1fr auto; gap:1.4vmin}
+.foot{grid-area:foot; margin:0; text-align:right; font-size:1.5vmin; color:var(--muted); padding-right:.6vmin}
+.foot.stale{color:var(--busy); font-weight:700}
 
-  .head{
-    grid-column:1; grid-row:1;
-    grid-template-columns:1fr auto; row-gap:1.2vmin; padding:1.6vmin 2.2vmin;
+/* ============================================================
+   横長ディスプレイ：今週を7列のカードに、来週は下の帯のまま
+   ============================================================ */
+@media (min-aspect-ratio:1/1){
+  .sign{
+    grid-template-columns:1fr clamp(180px,17vw,320px);
+    grid-template-rows:auto auto 1fr auto auto;
+    grid-template-areas:
+      "head   rail"
+      "status rail"
+      "main   rail"
+      "next   rail"
+      "foot   rail";
   }
-  .brand h1{font-size:4.4vmin}
-  .brand p{font-size:2vmin}
-  .clock-time{font-size:6.4vmin}
-  .clock-date{font-size:2.1vmin}
-  .status{grid-column:1 / -1; grid-row:2; min-width:100%; padding:1.4vmin 2vmin}
-  .status-label{font-size:4.4vmin}
-  .status-detail{font-size:2.3vmin; margin-top:.5vmin}
+  .brand{font-size:3vmin}
+  .clock-time{font-size:4vmin}
+  .status{padding:1.4vmin}
+  .status-label{font-size:4vmin}
+  .status-detail{font-size:1.9vmin}
+  .sec-title{font-size:1.8vmin}
 
-  .weeks{grid-column:1; grid-row:2; gap:1.4vmin}
-  .week{grid-template-columns:auto 1fr; gap:1.2vmin}
-  .week h2{font-size:2.4vmin; padding:0 .8vmin}
+  /* 7列のカード */
+  .days{grid-template-columns:repeat(7,1fr); grid-template-rows:1fr}
+  .day{flex-direction:column; align-items:stretch; gap:.8vmin; padding:1vmin}
+  .day-head{width:auto; align-items:baseline}
+  .day-num{font-size:2.6vmin}
+  .day-wd{font-size:1.8vmin}
+  .badge-today{margin-left:auto; font-size:1.3vmin}
+  .evs{flex-direction:column; align-items:stretch; flex-wrap:nowrap; gap:.6vmin}
+  .ev{flex-direction:column; align-items:flex-start; gap:.1vmin; min-width:0; padding:.6vmin .8vmin}
+  .ev-time{font-size:1.7vmin}
+  .ev-name{font-size:1.6vmin; white-space:normal; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical}
+  .ev-more{font-size:1.4vmin}
+  .free-mark{flex:1; display:flex; align-items:center; justify-content:center; font-size:2vmin}
 
-  /* 7列 → 7行 */
-  .days{grid-template-columns:1fr; grid-template-rows:repeat(7,1fr); gap:.9vmin}
+  .mini-date{font-size:1.7vmin}
+  .mini-state{font-size:1.5vmin}
 
-  .day{
-    flex-direction:row; align-items:center; gap:2vmin;
-    padding:.8vmin 1.8vmin; border-width:.25vmin;
-  }
-  .day-head{flex:none; width:15vmin; flex-wrap:nowrap; align-items:baseline}
-  .day-num{font-size:3.1vmin}
-  .day-wd{font-size:2.2vmin}
-  .badge-today{margin-left:.8vmin; font-size:1.7vmin; padding:.3vmin 1vmin}
-
-  /* 行の高さが決まっているので折り返さず、1行に詰める。
-     予定が多い日は名前側だけ切り詰め、時刻は必ず残す */
-  .evs{
-    flex:1; flex-direction:row; flex-wrap:nowrap; align-items:center;
-    gap:1vmin; min-width:0; overflow:hidden;
-  }
-  /* min-width を明示すると、縮んでも時刻が入る幅は必ず確保される。
-     はみ出す分は名前側（min-width:0）だけが省略される */
-  .ev{
-    display:flex; align-items:baseline; gap:1.2vmin; min-width:17vmin;
-    padding:.6vmin 1.4vmin; border-left-width:.5vmin;
-  }
-  .ev-time{font-size:2.2vmin; letter-spacing:-.01em; flex:none}
-  .ev-name{
-    font-size:2.2vmin; margin-top:0; min-width:0;
-    display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .ev-more{font-size:2vmin; align-self:center; flex:none; white-space:nowrap}
-
-  .free-mark{flex:1; justify-content:flex-start; font-size:2.6vmin; opacity:.65}
-
-  /* QRは下段に横並び */
-  .rail{
-    grid-column:1; grid-row:3; flex-direction:row; justify-content:space-evenly;
-    gap:3vmin; padding:2vmin 1.6vmin 3.4vmin; position:relative;
-  }
-  .qr img{width:min(100%,21vmin)}
-  .qr-title{font-size:2.4vmin; margin-top:1.2vmin}
-  .qr-sub{font-size:1.8vmin}
-  .rail-foot{position:absolute; right:2vmin; bottom:1.2vmin; font-size:1.6vmin}
+  .rail{flex-direction:column; justify-content:center; gap:4vmin; padding:2vmin 1.4vmin}
+  .qr img{width:min(100%,17vmin)}
+  .qr-title{font-size:1.8vmin}
+  .foot{font-size:1.3vmin}
 }
