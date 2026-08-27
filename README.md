@@ -117,6 +117,24 @@ URLを変えたい場合は `scripts/make-qr.mjs` の `TARGETS` を編集して�
 > `scripts/make-qr.mjs`（QR用）、`docs/index.html`（スマホ版のボタン）、
 > そして再生成した `docs/qr-form.svg`。
 
+---
+
+## 予約の変更・取消
+
+自動キャンセルの仕組みは入れていません。件数が少ないため人手で対応する方針です。
+両方のページに「予約の変更・取消は渡辺までご連絡ください」の案内を常時表示しています。
+
+表記を変えるときは次の2か所（どちらもコメント付き）を直してください。
+
+| ファイル | 場所 |
+|---|---|
+| `docs/index.html` | `<p class="note">` — スマホ版フッター |
+| `docs/signage.html` | `<p class="rail-note">` — サイネージのQR下 |
+
+なお **Jicoo 経由の予約は Outlook から消しても Jicoo 側の枠が空きません**。
+Jicoo で入った予約（予定の詳細に `jicoo.com` のリンクがあるもの）は
+Jicoo 側でキャンセルしてください。
+
 ```bash
 node scripts/make-qr.mjs
 ```

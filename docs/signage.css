@@ -143,8 +143,13 @@ body{
 .rail{
   grid-area:rail; background:var(--card); border:1px solid var(--line);
   border-radius:1.4vmin; padding:1.6vmin;
-  display:flex; align-items:center; justify-content:space-evenly; gap:3vmin;
+  display:flex; flex-direction:column; align-items:center; gap:1.2vmin;
 }
+.qrs{display:flex; align-items:flex-start; justify-content:center; gap:6vmin; width:100%}
+.rail-note{
+  margin:0; text-align:center; font-size:1.9vmin; color:var(--muted); line-height:1.35;
+}
+.rail-note b{color:var(--fg); font-size:2.1vmin}
 .qr{text-align:center}
 .qr img{width:19vmin; aspect-ratio:1; display:block; margin:0 auto; background:#fff}
 .qr-title{margin:.9vmin 0 0; font-size:2.1vmin; font-weight:800}
@@ -203,8 +208,11 @@ body{
   .days.compact .ev-more{font-size:1.2vmin}
   .days.compact .free-mark{flex:1; justify-content:flex-start; font-size:1.4vmin}
 
-  .rail{flex-direction:column; justify-content:center; gap:4vmin; padding:2vmin 1.4vmin}
-  .qr img{width:min(100%,17vmin)}
-  .qr-title{font-size:1.8vmin}
+  .rail{justify-content:center; gap:2vmin; padding:2vmin 1.2vmin}
+  .qrs{flex-direction:column; align-items:center; gap:3vmin}
+  .qr img{width:min(100%,15vmin)}
+  .qr-title{font-size:1.6vmin}
+  .rail-note{font-size:1.4vmin}
+  .rail-note b{font-size:1.55vmin}
   .foot{font-size:1.3vmin}
 }
