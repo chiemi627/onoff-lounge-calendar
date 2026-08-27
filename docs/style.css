@@ -107,8 +107,9 @@ body{
 .legend .l-busy b{background:var(--busy)}
 .legend .l-open b{background:var(--open)}
 .empty{color:var(--muted); font-size:14px; text-align:center; padding:28px 0}
+.updated{margin:4px 0 0; text-align:center; font-size:11px; color:var(--muted)}
 
-/* ---- フッタ ---- */
+/* ---- フッタ（常時表示の操作） ---- */
 .foot{
   position:fixed; left:0; right:0; bottom:0; z-index:10;
   display:flex; align-items:center; gap:10px;
@@ -116,8 +117,16 @@ body{
   background:color-mix(in srgb,var(--bg) 88%,transparent);
   backdrop-filter:blur(8px); border-top:1px solid var(--line);
 }
-.today{
-  border:1px solid var(--accent); background:var(--card); color:var(--accent);
-  border-radius:999px; padding:8px 16px; font:inherit; font-size:14px; font-weight:600; cursor:pointer;
+.btn-sub{
+  flex:none; border:1px solid var(--accent); background:var(--card); color:var(--accent);
+  border-radius:999px; padding:11px 16px; font:inherit; font-size:14px; font-weight:700; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
 }
-.status{font-size:11px; color:var(--muted); flex:1; text-align:right}
+.btn-main{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+  border-radius:999px; padding:11px 14px; font-size:15px; font-weight:700;
+  background:var(--accent); color:var(--on-accent); text-decoration:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-main::after{content:"↗"; font-size:13px; opacity:.85}
+.btn-sub:active,.btn-main:active{opacity:.75}

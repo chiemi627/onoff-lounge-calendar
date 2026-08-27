@@ -5,7 +5,7 @@ Outlook が公開している ICS を **GitHub Actions で軽量JSONに変換**�
 
 | ページ | 用途 | URL |
 |---|---|---|
-| スマホ用 | 月カレンダー。先の予定まで見る | `/` |
+| スマホ用 | 月カレンダー。先の予定まで見る＋予約フォームへのボタン | `/` |
 | サイネージ用 | ラウンジ入口の常時表示。今週・来週＋QR | `/signage.html` |
 
 ICS は約 100KB（100件）ありますが、実際にブラウザが読むのは **初回 0.3KB 程度**です。
@@ -112,6 +112,10 @@ chromium --kiosk --noerrdialogs --disable-infobars --incognito https://chiemi627
 
 `docs/qr-*.svg` は依存パッケージなしの自前エンコーダ（`scripts/qr.mjs`）で生成した静的ファイルです。
 URLを変えたい場合は `scripts/make-qr.mjs` の `TARGETS` を編集して再生成します。
+
+> 予約フォームのURLは3か所にあります。変更するときは全部直してください。
+> `scripts/make-qr.mjs`（QR用）、`docs/index.html`（スマホ版のボタン）、
+> そして再生成した `docs/qr-form.svg`。
 
 ```bash
 node scripts/make-qr.mjs

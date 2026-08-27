@@ -233,7 +233,7 @@ function shift(y, m, delta) {
     document.title = `${idx.name || 'カレンダー'} 予定`;
     const gen = new Date(idx.gen);
     el('status').textContent =
-      (live ? '更新 ' : 'オフライン表示 / ') +
+      (live ? '最終更新 ' : 'オフライン表示 / 最終更新 ') +
       gen.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     state.selDay = state.today.d;
     state.ready = true;
