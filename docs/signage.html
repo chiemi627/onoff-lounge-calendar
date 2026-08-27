@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>OnOffラウンジ 予定（サイネージ）</title>
+<link rel="stylesheet" href="signage.css">
+</head>
+<body>
+<div class="sign" id="sign">
+
+  <header class="head">
+    <div class="brand">
+      <h1>OnOff<span>ラウンジ</span></h1>
+      <p>今週・来週の予定</p>
+    </div>
+
+    <div class="status" id="status">
+      <div class="status-label" id="status-label">読み込み中</div>
+      <div class="status-detail" id="status-detail">&nbsp;</div>
+    </div>
+
+    <div class="clock">
+      <div class="clock-time" id="clock-time">--:--</div>
+      <div class="clock-date" id="clock-date">&nbsp;</div>
+    </div>
+  </header>
+
+  <main class="weeks">
+    <section class="week">
+      <h2>今週</h2>
+      <div class="days" id="week0"></div>
+    </section>
+    <section class="week">
+      <h2>来週</h2>
+      <div class="days" id="week1"></div>
+    </section>
+  </main>
+
+  <aside class="rail">
+    <div class="qr">
+      <img src="qr-form.svg" alt="予約フォームのQRコード">
+      <p class="qr-title">ラウンジを予約する</p>
+      <p class="qr-sub">予約フォーム</p>
+    </div>
+    <div class="qr">
+      <img src="qr-mobile.svg" alt="スマホ用予定ページのQRコード">
+      <p class="qr-title">スマホで予定を見る</p>
+      <p class="qr-sub">先の予定も確認できます</p>
+    </div>
+    <p class="rail-foot" id="rail-foot">&nbsp;</p>
+  </aside>
+
+</div>
+<script src="signage.js"></script>
+</body>
+</html>
