@@ -16,7 +16,9 @@ const WD = ['日', '月', '火', '水', '木', '金', '土'];
 const el = (id) => document.getElementById(id);
 // 縦置きは1行あたりの高さが限られるので、出す件数を絞る
 const portrait = matchMedia('(max-aspect-ratio: 1/1)');
-const maxShown = () => (portrait.matches ? 3 : 4);
+// 1行(1枚)に出せる予定の数。来週は行が低いので少なめにする
+const maxShown = (compact) =>
+  compact ? (portrait.matches ? 2 : 1) : (portrait.matches ? 3 : 4);
 const pad = (n) => String(n).padStart(2, '0');
 const hhmm = (min) => `${pad(Math.floor(min / 60) % 24)}:${pad(min % 60)}`;
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -109,13 +111,18 @@ function evHtml(ev) {
     </div>`;
 }
 
-/** 今週：主役。1日1枚のカードで大きく出す */
-function renderThisWeek() {
+/**
+ * 1週間分のカードを描く。
+ * @param {string} boxId  描画先
+ * @param {number} offset 週の開始からの日数（今週=0 / 来週=7）
+ * @param {boolean} compact 来週用の低い行にするか
+ */
+function renderWeek(boxId, offset, compact) {
   const today = dayStart(nowJstMin());
   const frag = document.createDocumentFragment();
 
   for (let i = 0; i < 7; i++) {
-    const dayMin = state.weekStart + i * 1440;
+    const dayMin = state.weekStart + (offset + i) * 1440;
     const p = partsOf(dayMin);
     const evs = eventsOn(dayMin);
 
@@ -124,7 +131,6 @@ function renderThisWeek() {
       (dayMin === today ? ' today' : dayMin < today ? ' past' : '') +
       (p.w === 0 ? ' sun' : p.w === 6 ? ' sat' : '');
 
-    // 「今日」バッジも日付ブロックの中に入れて、予定チップの開始位置を揃える
     const head = `<div class="day-head">
         <span class="day-num">${p.m}/${p.d}</span>
         <span class="day-wd">${WD[p.w]}</span>
@@ -133,9 +139,9 @@ function renderThisWeek() {
 
     let body;
     if (!evs.length) {
-      body = `<div class="free-mark">空き</div>`;
+      body = '<div class="free-mark">空き</div>';
     } else {
-      const shown = evs.slice(0, maxShown());
+      const shown = evs.slice(0, maxShown(compact));
       body = '<div class="evs">' + shown.map(evHtml).join('') +
         (evs.length > shown.length ? `<span class="ev-more">ほか${evs.length - shown.length}件</span>` : '') +
         '</div>';
@@ -143,36 +149,12 @@ function renderThisWeek() {
     card.innerHTML = head + body;
     frag.appendChild(card);
   }
-  el('week0').replaceChildren(frag);
-}
-
-/** 来週：おまけ。貸切か空きかだけ分かればよい */
-function renderNextWeek() {
-  const frag = document.createDocumentFragment();
-
-  for (let i = 0; i < 7; i++) {
-    const dayMin = state.weekStart + (7 + i) * 1440;
-    const p = partsOf(dayMin);
-    const evs = eventsOn(dayMin);
-    const busy = evs.some((ev) => ev.kind === 0);
-
-    const cell = document.createElement('div');
-    cell.className = 'mini-day' + (busy ? ' busy' : '') +
-      (p.w === 0 ? ' sun' : p.w === 6 ? ' sat' : '');
-    const state_ = evs.length
-      ? (busy ? state.labels[0] : state.labels[1]) + (evs.length > 1 ? ` ${evs.length}件` : '')
-      : '空き';
-    cell.innerHTML = `<span class="mini-date">${p.m}/${p.d}</span>` +
-      `<span class="mini-wd">${WD[p.w]}</span>` +
-      `<span class="mini-state">${esc(state_)}</span>`;
-    frag.appendChild(cell);
-  }
-  el('week1').replaceChildren(frag);
+  el(boxId).replaceChildren(frag);
 }
 
 function renderWeeks() {
-  renderThisWeek();
-  renderNextWeek();
+  renderWeek('week0', 0, false);  // 今週（主役）
+  renderWeek('week1', 7, true);   // 来週（おまけ）
 }
 
 /** ヘッダの「ただいま」表示 */
