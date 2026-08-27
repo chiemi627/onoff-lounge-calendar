@@ -64,7 +64,9 @@ async function loadMonth(key) {
   if (cached && cached.v === state.index.v) { state.cache.set(key, cached); return cached; }
 
   try {
-    const res = await fetch(`data/${key}.json`, { cache: 'force-cache' });
+    // URLにバージョンを付ける。force-cache は古くてもキャッシュを返すので、
+    // 版が変わったときに確実に取り直せるようにする
+    const res = await fetch(`data/${key}.json?v=${state.index.v}`, { cache: 'force-cache' });
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     store.set(key, data);

@@ -68,7 +68,9 @@ async function sync() {
     if (!changed && state.months.has(key)) continue;
     if (!idx.months[key]) { state.months.set(key, null); continue; }
     try {
-      const data = await fetchJson(`data/${key}.json`, { cache: 'force-cache' });
+      // URLにバージョンを付ける。同じ版ならキャッシュがそのまま効き、
+      // 版が変われば別URLになるので確実に新しいものを取りに行く
+      const data = await fetchJson(`data/${key}.json?v=${idx.v}`, { cache: 'force-cache' });
       state.months.set(key, data);
       if (data.k) state.labels = data.k;
       loaded = true;
