@@ -1,0 +1,40 @@
+name: Update calendar
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # 30分おき（UTC。GitHubのcronは数分ずれることがあります）
+  workflow_dispatch:          # 手動実行用
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: ICS を取得して軽量JSONに変換
+        env:
+          ICS_URL: ${{ secrets.ICS_URL }}
+        run: node scripts/build.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - uses: actions/deploy-pages@v4

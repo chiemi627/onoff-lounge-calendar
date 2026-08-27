@@ -1,0 +1,9 @@
+{
+  "name": "OnOffラウンジ 予定",
+  "short_name": "ラウンジ",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1b6b5a",
+  "icons": []
+}

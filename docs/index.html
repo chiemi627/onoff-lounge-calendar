@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1b6b5a" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1512" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>OnOffラウンジ 予定</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <button id="prev" class="nav" aria-label="前の月">‹</button>
+  <div class="bar-mid">
+    <h1 id="title">読み込み中…</h1>
+    <div id="month" class="month">&nbsp;</div>
+  </div>
+  <button id="next" class="nav" aria-label="次の月">›</button>
+</header>
+
+<main>
+  <div class="grid-wrap">
+    <div class="dow" aria-hidden="true">
+      <span class="sun">日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span class="sat">土</span>
+    </div>
+    <div id="grid" class="grid"></div>
+    <p class="legend">
+      <span class="l-busy"><b></b>貸切＝ラウンジは使えません</span>
+      <span class="l-open"><b></b>公開＝誰でも参加できます</span>
+    </p>
+  </div>
+
+  <section id="agenda" class="agenda" aria-live="polite"></section>
+</main>
+
+<footer class="foot">
+  <button id="today" class="today">今日へ</button>
+  <span id="status" class="status"></span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
