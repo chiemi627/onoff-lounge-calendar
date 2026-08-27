@@ -126,19 +126,68 @@ body{
 .rail-foot{margin:0; font-size:1.2vmin; color:var(--muted); text-align:center; line-height:1.4}
 .rail-foot.stale{color:var(--busy)}
 
-/* ---------- 縦置きディスプレイ ---------- */
+/* ---------- 縦置きディスプレイ（ワイドパネルを縦向きに設置） ----------
+   7列に割ると1日あたりが細くなりすぎるので、
+   「日付＋予定」を横長の行にして縦に14本並べる            */
 @media (max-aspect-ratio:1/1){
-  .sign{grid-template-columns:1fr; grid-template-rows:auto 1fr auto}
-  .head{grid-column:1; grid-row:1; grid-template-columns:1fr auto}
-  .status{grid-column:1 / -1; grid-row:2; margin-top:1vmin; min-width:100%}
-  .weeks{grid-column:1; grid-row:2}
-  .rail{grid-column:1; grid-row:3; flex-direction:row; gap:4vmin; padding:1.6vmin}
-  .qr img{width:min(100%,16vmin)}
-  .rail-foot{position:absolute; right:2vmin; bottom:1vmin}
-  .brand h1{font-size:4vmin}
-  .day-num{font-size:3vmin}
-  .ev-time{font-size:1.4vmin; letter-spacing:-.02em}
-  .ev-name{font-size:1.75vmin}
-  .badge-today{font-size:1.4vmin; margin-left:0}
-  .free-mark{font-size:3vmin}
+  .sign{grid-template-columns:1fr; grid-template-rows:auto 1fr auto; gap:1.4vmin}
+
+  .head{
+    grid-column:1; grid-row:1;
+    grid-template-columns:1fr auto; row-gap:1.2vmin; padding:1.6vmin 2.2vmin;
+  }
+  .brand h1{font-size:4.4vmin}
+  .brand p{font-size:2vmin}
+  .clock-time{font-size:6.4vmin}
+  .clock-date{font-size:2.1vmin}
+  .status{grid-column:1 / -1; grid-row:2; min-width:100%; padding:1.4vmin 2vmin}
+  .status-label{font-size:4.4vmin}
+  .status-detail{font-size:2.3vmin; margin-top:.5vmin}
+
+  .weeks{grid-column:1; grid-row:2; gap:1.4vmin}
+  .week{grid-template-columns:auto 1fr; gap:1.2vmin}
+  .week h2{font-size:2.4vmin; padding:0 .8vmin}
+
+  /* 7列 → 7行 */
+  .days{grid-template-columns:1fr; grid-template-rows:repeat(7,1fr); gap:.9vmin}
+
+  .day{
+    flex-direction:row; align-items:center; gap:2vmin;
+    padding:.8vmin 1.8vmin; border-width:.25vmin;
+  }
+  .day-head{flex:none; width:15vmin; flex-wrap:nowrap; align-items:baseline}
+  .day-num{font-size:3.1vmin}
+  .day-wd{font-size:2.2vmin}
+  .badge-today{margin-left:.8vmin; font-size:1.7vmin; padding:.3vmin 1vmin}
+
+  /* 行の高さが決まっているので折り返さず、1行に詰める。
+     予定が多い日は名前側だけ切り詰め、時刻は必ず残す */
+  .evs{
+    flex:1; flex-direction:row; flex-wrap:nowrap; align-items:center;
+    gap:1vmin; min-width:0; overflow:hidden;
+  }
+  /* min-width を明示すると、縮んでも時刻が入る幅は必ず確保される。
+     はみ出す分は名前側（min-width:0）だけが省略される */
+  .ev{
+    display:flex; align-items:baseline; gap:1.2vmin; min-width:17vmin;
+    padding:.6vmin 1.4vmin; border-left-width:.5vmin;
+  }
+  .ev-time{font-size:2.2vmin; letter-spacing:-.01em; flex:none}
+  .ev-name{
+    font-size:2.2vmin; margin-top:0; min-width:0;
+    display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .ev-more{font-size:2vmin; align-self:center; flex:none; white-space:nowrap}
+
+  .free-mark{flex:1; justify-content:flex-start; font-size:2.6vmin; opacity:.65}
+
+  /* QRは下段に横並び */
+  .rail{
+    grid-column:1; grid-row:3; flex-direction:row; justify-content:space-evenly;
+    gap:3vmin; padding:2vmin 1.6vmin 3.4vmin; position:relative;
+  }
+  .qr img{width:min(100%,21vmin)}
+  .qr-title{font-size:2.4vmin; margin-top:1.2vmin}
+  .qr-sub{font-size:1.8vmin}
+  .rail-foot{position:absolute; right:2vmin; bottom:1.2vmin; font-size:1.6vmin}
 }

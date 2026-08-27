@@ -14,6 +14,9 @@ const SHIFT_MS     = 7 * 60 * 1000;   // 焼き付き防止のずらし
 const WD = ['日', '月', '火', '水', '木', '金', '土'];
 
 const el = (id) => document.getElementById(id);
+// 縦置きは1行あたりの高さが限られるので、出す件数を絞る
+const portrait = matchMedia('(max-aspect-ratio: 1/1)');
+const maxShown = () => (portrait.matches ? 3 : 4);
 const pad = (n) => String(n).padStart(2, '0');
 const hhmm = (min) => `${pad(Math.floor(min / 60) % 24)}:${pad(min % 60)}`;
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -114,7 +117,7 @@ function renderWeeks() {
       if (!evs.length) {
         body = '<div class="free-mark">空き</div>';
       } else {
-        const shown = evs.slice(0, 4);
+        const shown = evs.slice(0, maxShown());
         body = '<div class="evs">' + shown.map((ev) => {
           let t;
           if (ev.s < 0) t = '終日';
@@ -228,4 +231,7 @@ function drift() {
   setInterval(drift, 60 * 1000);
   // 復帰時はすぐ取り直す
   addEventListener('online', () => refresh(true));
+  // 画面の向きが変わったら件数を調整して描き直す
+  portrait.addEventListener('change', () => renderWeeks());
+  addEventListener('resize', () => renderWeeks());
 })();
