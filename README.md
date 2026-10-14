@@ -41,7 +41,7 @@ Settings → Pages → **Source: GitHub Actions** を選択。
 Actions タブ → 「Update calendar」 → Run workflow。
 完了すると `https://<ユーザー名>.github.io/onoff-lounge-calendar/` で見られます。
 
-以降は自動で更新されます（Outlook側に反映されてから **数分〜10分程度**）。
+以降は自動で更新されます（Outlook側に反映されてから **1〜2分程度**）。
 仕組みは下の「更新のしくみ」を参照。
 
 ---
@@ -53,19 +53,25 @@ GitHub の定期実行（cron）は混雑時に大きく間引かれ、「30分�
 
 | ワークフロー | 役割 |
 |---|---|
-| `watch.yml`（Watch calendar） | 起動すると約5時間45分居座り、**3分おきに ICS を変換して公開中の版と比べる**。違っていたら `update.yml` を起動 |
+| `watch.yml`（Watch calendar） | 起動すると約5時間45分居座り、**1分おきに ICS を変換して公開中の版と比べる**。違っていたら `update.yml` を起動 |
 | `update.yml`（Update calendar） | ICS → JSON 変換して Pages にデプロイ。毎時の cron は保険 |
 
 `watch.yml` は毎時起動を指示しているので、間引かれても数時間に1回は来て、
 その間は切れ目なく見張ります（重なった起動は待機に回るだけ）。
 
-予約から表示までの遅れは「**Outlook が公開ICSに反映するまでの時間** ＋ 最大3分 ＋ デプロイ約1分
-＋ CDNキャッシュ最大10分」です。最初の項目は Microsoft 側の都合で、こちらでは縮められません。
+予約から表示までの遅れは「**Outlook が公開ICSに反映するまでの時間** ＋ 最大1分 ＋ デプロイ約1分」です。最初の項目は Microsoft 側の都合で、こちらでは縮められません。
 
 > 公開リポジトリの定期実行は **60日間コミットがないと GitHub に自動停止**されます。
 > `watch.yml` が起動のたびに enable API を叩いて期限をリセットしています。
 
-### 今すぐ反映したいとき（手動）
+### ページの「↻ 最新を読み込む」ボタン
+
+スマホ用ページの最終更新の横にあります。GitHub を起動するのではなく、
+**公開中の最新データを CDN のキャッシュを避けて取り直す**だけです。
+更新そのものは上の見張りが1分おきに行っているので、これで十分間に合います。
+（GitHub を起動するにはトークンが要り、公開ページには置けないため、この形にしています）
+
+### 今すぐ反映したいとき（管理者・手動）
 
 ブラウザから: **Actions → Update calendar → Run workflow**
 （スマホでも GitHub アプリ／ブラウザから押せます）
@@ -217,4 +223,4 @@ node scripts/build.mjs path/to/calendar.ics
 | `SHOW_LOCATION` | false | 場所を表示するか |
 | `MASKED_LABEL` | 予約済み | 伏せ字の表示 |
 
-確認間隔は `.github/workflows/watch.yml` の `INTERVAL_SEC`（既定180秒）で調整します。
+確認間隔は `.github/workflows/watch.yml` の `INTERVAL_SEC`（既定60秒）で調整します。

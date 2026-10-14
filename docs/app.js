@@ -41,9 +41,10 @@ const daysIn = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
 const hhmm = (min) => `${pad(Math.floor(min / 60) % 24)}:${pad(min % 60)}`;
 
 // ---------- データ取得 ----------
-async function loadIndex() {
+async function loadIndex(bust = false) {
   try {
-    const res = await fetch('data/index.json', { cache: 'no-cache' });
+    // bust: 同期直後は CDN のキャッシュ(最大10分)を避けるためクエリを付ける
+    const res = await fetch(bust ? `data/index.json?t=${Date.now()}` : 'data/index.json', { cache: 'no-cache' });
     if (!res.ok) throw new Error(res.status);
     const idx = await res.json();
     store.set('index', idx);
@@ -192,6 +193,38 @@ function shift(y, m, delta) {
   return { y: y + Math.floor(t / 12), m: ((t % 12) + 12) % 12 + 1 };
 }
 
+function applyIndex(idx, live) {
+  state.index = idx;
+  state.cache.clear();
+  state.today = jstNow();
+  const gen = new Date(idx.gen);
+  el('status').textContent =
+    (live ? '最終更新 ' : 'オフライン表示 / 最終更新 ') +
+    gen.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// ---------- 読み直しボタン ----------
+// 更新は GitHub Actions が1分おきに自動で行う。ボタンは公開中の最新データを取り直すだけ
+async function reload() {
+  const btn = el('sync'), msg = el('sync-msg');
+  btn.disabled = true;
+  try {
+    const oldV = state.index?.v;
+    const { idx, live } = await loadIndex(true);
+    applyIndex(idx, live);
+    await show(state.y, state.m, { resetSel: false });
+    msg.textContent = !live ? '通信できませんでした。電波の良いところでもう一度お試しください'
+      : idx.v !== oldV ? '最新の予定を反映しました'
+      : '新しい予定はまだありません。予約から表示まで数分〜十数分かかることがあります';
+  } catch (e) {
+    msg.textContent = `読み込めませんでした: ${e.message}`;
+  } finally {
+    msg.hidden = false;
+    msg.scrollIntoView({ block: 'center', behavior: 'smooth' }); // 下の固定フッターに隠れないように
+    btn.disabled = false;
+  }
+}
+
 // ---------- 起動 ----------
 (async function init() {
   const step = (delta) => {
@@ -225,16 +258,13 @@ function shift(y, m, delta) {
     x0 = null;
   }, { passive: true });
 
+  el('sync').onclick = reload;
+
   try {
     const { idx, live } = await loadIndex();
-    state.index = idx;
-    state.today = jstNow();
+    applyIndex(idx, live);
     el('title').textContent = idx.name || 'カレンダー';
     document.title = `${idx.name || 'カレンダー'} 予定`;
-    const gen = new Date(idx.gen);
-    el('status').textContent =
-      (live ? '最終更新 ' : 'オフライン表示 / 最終更新 ') +
-      gen.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     state.selDay = state.today.d;
     state.ready = true;
     await show(state.today.y, state.today.m, { resetSel: false });

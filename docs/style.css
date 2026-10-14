@@ -108,6 +108,12 @@ body{
 .legend .l-open b{background:var(--open)}
 .empty{color:var(--muted); font-size:14px; text-align:center; padding:28px 0}
 .updated{margin:4px 0 0; text-align:center; font-size:11px; color:var(--muted)}
+.sync{
+  margin-left:8px; padding:4px 10px; border:1px solid var(--line); border-radius:999px;
+  background:var(--card); color:var(--accent); font:inherit; font-weight:600; cursor:pointer;
+}
+.sync:disabled{color:var(--muted); cursor:default}
+.sync-msg{margin:6px 16px 0; text-align:center; font-size:12px; color:var(--fg)}
 
 /* ---- フッタ（常時表示の操作） ---- */
 .foot{

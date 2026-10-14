@@ -2,9 +2,9 @@ name: Watch calendar
 
 # GitHub の schedule は混雑時に大きく間引かれ、「30分おき」の指定でも実際は
 # 3〜7時間に1回しか起動しないことがある。そこで「起動したら約5時間50分居座り、
-# その間3分おきに ICS を見て、内容が変わったときだけ Update calendar を起動する」
+# その間1分おきに ICS を見て、内容が変わったときだけ Update calendar を起動する」
 # 方式にしている。schedule が数時間おきにしか来なくても、次の起動までの間は
-# このジョブが見張っているので、反映の遅れは「Outlook側の遅れ＋数分」に収まる。
+# このジョブが見張っているので、反映の遅れは「Outlook側の遅れ＋1〜2分」に収まる。
 
 on:
   schedule:
@@ -45,7 +45,7 @@ jobs:
           ICS_URL: ${{ secrets.ICS_URL }}
           GH_TOKEN: ${{ github.token }}
           SITE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
-          INTERVAL_SEC: 180
+          INTERVAL_SEC: 60
           DURATION_SEC: 20700   # 5時間45分
         run: |
           end=$(( $(date +%s) + DURATION_SEC ))
