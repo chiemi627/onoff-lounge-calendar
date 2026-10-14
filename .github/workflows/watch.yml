@@ -1,0 +1,70 @@
+name: Watch calendar
+
+# GitHub の schedule は混雑時に大きく間引かれ、「30分おき」の指定でも実際は
+# 3〜7時間に1回しか起動しないことがある。そこで「起動したら約5時間50分居座り、
+# その間3分おきに ICS を見て、内容が変わったときだけ Update calendar を起動する」
+# 方式にしている。schedule が数時間おきにしか来なくても、次の起動までの間は
+# このジョブが見張っているので、反映の遅れは「Outlook側の遅れ＋数分」に収まる。
+
+on:
+  schedule:
+    - cron: '17 * * * *'     # 毎時17分（00分・30分は混むので避ける）。間引かれても構わない
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write             # Update calendar の起動と、ワークフローの自動停止よけに使う
+
+concurrency:
+  group: watch
+  cancel-in-progress: false  # 動いている見張りは止めない（次の起動は待機に回る）
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355     # ジョブの上限は6時間
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # 公開リポジトリの schedule は60日コミットがないと自動で無効化される。
+      # enable API を叩くとその期限がリセットされる。
+      - name: 定期実行の自動停止よけ
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in watch.yml update.yml; do
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/$wf/enable" || true
+          done
+
+      - name: ICS を見張る
+        env:
+          ICS_URL: ${{ secrets.ICS_URL }}
+          GH_TOKEN: ${{ github.token }}
+          SITE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          INTERVAL_SEC: 180
+          DURATION_SEC: 20700   # 5時間45分
+        run: |
+          end=$(( $(date +%s) + DURATION_SEC ))
+          last_triggered=""; last_at=0
+          while [ "$(date +%s)" -lt "$end" ]; do
+            if node scripts/build.mjs > /tmp/build.log 2>&1; then
+              local_v=$(node -p "require('./docs/data/index.json').v")
+              # CDN のキャッシュ(10分)を避けるためクエリを付ける
+              live_v=$(curl -fsS "$SITE/data/index.json?t=$(date +%s)" | node -p "JSON.parse(require('fs').readFileSync(0)).v" 2>/dev/null || echo "")
+              now=$(date +%s)
+              # 同じ版で起動済みなら、デプロイ中とみなして15分は待つ（失敗していたらその後に再起動）
+              if [ "$local_v" != "$live_v" ] && { [ "$local_v" != "$last_triggered" ] || [ $(( now - last_at )) -gt 900 ]; }; then
+                echo "$(date -u +%FT%TZ) 変更あり: 公開中=$live_v → 新=$local_v。Update calendar を起動"
+                gh workflow run update.yml --ref "${{ github.ref_name }}"
+                last_triggered="$local_v"; last_at=$now
+              fi
+            else
+              echo "$(date -u +%FT%TZ) ICS の取得/変換に失敗（次回再試行）"
+              tail -n 5 /tmp/build.log
+            fi
+            sleep "$INTERVAL_SEC"
+          done

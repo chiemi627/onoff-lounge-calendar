@@ -2,8 +2,10 @@ name: Update calendar
 
 on:
   schedule:
-    - cron: '*/30 * * * *'   # 30分おき（UTC。GitHubのcronは数分ずれることがあります）
-  workflow_dispatch:          # 手動実行用
+    # 保険。普段は watch.yml が変更を見つけて起動する。
+    # GitHubのcronは混雑時に数時間単位で間引かれるので、これだけに頼らないこと
+    - cron: '47 * * * *'
+  workflow_dispatch:          # 手動実行用（Actions → Update calendar → Run workflow）
   push:
     branches: [main]
 

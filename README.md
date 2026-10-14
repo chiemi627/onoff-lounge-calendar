@@ -41,7 +41,43 @@ Settings → Pages → **Source: GitHub Actions** を選択。
 Actions タブ → 「Update calendar」 → Run workflow。
 完了すると `https://<ユーザー名>.github.io/onoff-lounge-calendar/` で見られます。
 
-以降は **30分おきに自動更新**されます。
+以降は自動で更新されます（Outlook側に反映されてから **数分〜10分程度**）。
+仕組みは下の「更新のしくみ」を参照。
+
+---
+
+## 更新のしくみ
+
+GitHub の定期実行（cron）は混雑時に大きく間引かれ、「30分おき」と書いても
+実際は **3〜7時間に1回** しか動かないことがあります。そこで2本立てにしています。
+
+| ワークフロー | 役割 |
+|---|---|
+| `watch.yml`（Watch calendar） | 起動すると約5時間45分居座り、**3分おきに ICS を変換して公開中の版と比べる**。違っていたら `update.yml` を起動 |
+| `update.yml`（Update calendar） | ICS → JSON 変換して Pages にデプロイ。毎時の cron は保険 |
+
+`watch.yml` は毎時起動を指示しているので、間引かれても数時間に1回は来て、
+その間は切れ目なく見張ります（重なった起動は待機に回るだけ）。
+
+予約から表示までの遅れは「**Outlook が公開ICSに反映するまでの時間** ＋ 最大3分 ＋ デプロイ約1分
+＋ CDNキャッシュ最大10分」です。最初の項目は Microsoft 側の都合で、こちらでは縮められません。
+
+> 公開リポジトリの定期実行は **60日間コミットがないと GitHub に自動停止**されます。
+> `watch.yml` が起動のたびに enable API を叩いて期限をリセットしています。
+
+### 今すぐ反映したいとき（手動）
+
+ブラウザから: **Actions → Update calendar → Run workflow**
+（スマホでも GitHub アプリ／ブラウザから押せます）
+
+ターミナルから:
+
+```bash
+gh workflow run update.yml --repo chiemi627/onoff-lounge-calendar
+```
+
+Outlook の公開ICSにまだ載っていない予定は、手動で実行しても出ません。
+その場合は数分おいてもう一度実行してください。
 
 ---
 
@@ -181,5 +217,4 @@ node scripts/build.mjs path/to/calendar.ics
 | `SHOW_LOCATION` | false | 場所を表示するか |
 | `MASKED_LABEL` | 予約済み | 伏せ字の表示 |
 
-更新頻度は `.github/workflows/update.yml` の cron で調整します
-（例: 日中だけなら `0 22-9 * * *`）。
+確認間隔は `.github/workflows/watch.yml` の `INTERVAL_SEC`（既定180秒）で調整します。
