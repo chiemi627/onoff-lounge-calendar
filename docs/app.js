@@ -225,6 +225,23 @@ async function reload() {
   }
 }
 
+// ---------- 日付跨ぎ ----------
+// スマホはタブを開いたまま何日も残るので、復帰時と毎分「今日」を確かめ直す
+function checkDay() {
+  if (!state.ready) return;
+  const prev = state.today, t = jstNow();
+  if (prev && prev.y === t.y && prev.m === t.m && prev.d === t.d) return;
+  state.today = t;
+  // 昨日の「今日」を見ていた人は、新しい今日へ連れて行く（月替わりも含む）
+  const onPrevToday = prev && state.y === prev.y && state.m === prev.m && state.selDay === prev.d;
+  if (onPrevToday) {
+    state.selDay = t.d;
+    show(t.y, t.m, { resetSel: false });
+  } else {
+    show(state.y, state.m, { resetSel: false });
+  }
+}
+
 // ---------- 起動 ----------
 (async function init() {
   const step = (delta) => {
@@ -259,6 +276,10 @@ async function reload() {
   }, { passive: true });
 
   el('sync').onclick = reload;
+
+  setInterval(checkDay, 60 * 1000);
+  addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkDay(); });
+  addEventListener('pageshow', checkDay); // 戻る操作でキャッシュから復元されたとき
 
   try {
     const { idx, live } = await loadIndex();

@@ -45,6 +45,7 @@ const state = {
   months: new Map(),   // "2026-08" -> {t,l,e,k,h}
   labels: ['貸切', '公開'],
   weekStart: 0,
+  day: 0,              // いま「今日」として描いている日（JSTエポック分）
   lastGood: 0,
   reloadAt: Date.now() + RELOAD_MS,
 };
@@ -218,11 +219,17 @@ function tick() {
   renderStatus();
   renderFoot();
 
-  // 日付が変わって週がずれたら week を送り直す
-  const ws = mondayOf(nowJstMin());
+  // 日付が変わったら「今日」の印を付け直す。週もずれたらデータごと送り直す
+  const now = nowJstMin();
+  const ws = mondayOf(now);
+  const day = dayStart(now);
   if (ws !== state.weekStart) {
     state.weekStart = ws;
+    state.day = day;
     refresh(true);
+  } else if (day !== state.day) {
+    state.day = day;
+    renderWeeks();
   }
   // 長時間の連続稼働に備えて1日1回だけ読み込み直す
   if (Date.now() > state.reloadAt) location.reload();
@@ -239,6 +246,7 @@ function drift() {
 
 (async function init() {
   state.weekStart = mondayOf(nowJstMin());
+  state.day = dayStart(nowJstMin());
   renderClock();
   drift();
   await refresh(true);
